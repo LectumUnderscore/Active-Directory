@@ -3,17 +3,19 @@
 $ADForest = Get-ADForest
 
 #Get the UserPrincipalName
-Write-Host "What is the users e-mail address from the Leavers task?"
+Write-Host "What is the users e-mail address?"
 $UserPrincipalName = Read-Host
 
 $User = $null
-while ($User -eq $null) {
-    #Fastest way to find users first, from root domain
-    $User = Get-ADUser -Filter "UserPrincipalName -eq '$UserPrincipalName'" -Properties memberof
 
+#Fastest way to find users first, from root domain
+$User = Get-ADUser -Filter "UserPrincipalName -eq '$UserPrincipalName'" -Properties memberof
+
+while ($User -eq $null) {
+
+    #In case the user is in another domain, other than root
     Write-Host "$UserPrincipalName Was not found, will try other domains"
     foreach ($Domain in $ADForest.Domains) {
-        #In case the user is in another domain, other than root
         $User = Get-ADUser -Filter "UserPrincipalName -eq '$UserPrincipalName'" -Server $Domain -Properties memberof
         if ($User -ne $null) {
             Write-Host $UserPrincipalName" found in "$Domain
